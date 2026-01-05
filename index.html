@@ -59,17 +59,17 @@
       </div>
     </div>
 
-    <!-- Controles por enchufe -->
     <div class="row2">
+      <!-- PLUG 1 -->
       <div class="card">
         <div class="section-title">
           <div>
-            <div style="font-size:1.05rem;font-weight:800">Enchufe 1</div>
-            <div class="tag">Comandos con {"plug":1}</div>
+            <div style="font-size:1.05rem;font-weight:800">Enchufe flotador</div>
+            <div class="tag">Siempre en AUTO (sigue el flotador). ON/OFF = override puntual.</div>
           </div>
           <div class="pill">
             <span class="label" style="margin:0">Modo:</span>
-            <span class="value" style="font-size:.95rem" id="p1mode">–</span>
+            <span class="value" style="font-size:.95rem" id="p1mode">AUTO</span>
           </div>
         </div>
 
@@ -79,22 +79,21 @@
         </div>
 
         <div class="buttons">
-          <button class="primary" onclick="sendCmd({plug:1, mode:'AUTO'})">AUTO</button>
-          <button onclick="sendCmd({plug:1, mode:'MANUAL'})">MANUAL</button>
-          <button class="primary" onclick="sendCmd({plug:1, mode:'MANUAL', relay:'ON'})">ENCENDER</button>
-          <button class="danger" onclick="sendCmd({plug:1, mode:'MANUAL', relay:'OFF'})">APAGAR</button>
+          <button class="primary" onclick="sendCmd({plug:1, relay:'ON'})">ENCENDER</button>
+          <button class="danger" onclick="sendCmd({plug:1, relay:'OFF'})">APAGAR</button>
         </div>
       </div>
 
+      <!-- PLUG 2 -->
       <div class="card">
         <div class="section-title">
           <div>
-            <div style="font-size:1.05rem;font-weight:800">Enchufe 2</div>
-            <div class="tag">Comandos con {"plug":2}</div>
+            <div style="font-size:1.05rem;font-weight:800">Luz pecera cocina</div>
+            <div class="tag">Control directo ON/OFF</div>
           </div>
           <div class="pill">
             <span class="label" style="margin:0">Modo:</span>
-            <span class="value" style="font-size:.95rem" id="p2mode">–</span>
+            <span class="value" style="font-size:.95rem" id="p2mode">MANUAL</span>
           </div>
         </div>
 
@@ -104,10 +103,8 @@
         </div>
 
         <div class="buttons">
-          <button class="primary" onclick="sendCmd({plug:2, mode:'AUTO'})">AUTO</button>
-          <button onclick="sendCmd({plug:2, mode:'MANUAL'})">MANUAL</button>
-          <button class="primary" onclick="sendCmd({plug:2, mode:'MANUAL', relay:'ON'})">ENCENDER</button>
-          <button class="danger" onclick="sendCmd({plug:2, mode:'MANUAL', relay:'OFF'})">APAGAR</button>
+          <button class="primary" onclick="sendCmd({plug:2, relay:'ON'})">ENCENDER</button>
+          <button class="danger" onclick="sendCmd({plug:2, relay:'OFF'})">APAGAR</button>
         </div>
       </div>
     </div>
@@ -120,15 +117,12 @@
 
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <script>
-    // ====== CONFIG HIVE MQ CLOUD ======
     const host = "f0692b7a0c834d47ba2b1669d5576be6.s1.eu.hivemq.cloud";
     const url  = `wss://${host}:8884/mqtt`;
 
-    // Topics
     const TOPIC_CMD    = "flotador/9xQ7Kp2A7FvM/cmd";
     const TOPIC_STATUS = "flotador/9xQ7Kp2A7FvM/status";
 
-    // ====== Credenciales por sesión ======
     function getCreds() {
       const saved = sessionStorage.getItem("mqttCreds");
       if (saved) return JSON.parse(saved);
@@ -174,17 +168,13 @@
     function relayTxt(v){
       return (v === 1) ? "ON" : (v === 0) ? "OFF" : "N/A";
     }
-
     function relayClass(v){
       return (v === 1) ? "ok" : (v === 0) ? "bad" : "warn";
     }
 
     const clientId = "web_" + Math.random().toString(16).slice(2);
-
     const client = mqtt.connect(url, {
-      clientId,
-      username,
-      password,
+      clientId, username, password,
       clean: true,
       connectTimeout: 8000,
       reconnectPeriod: 2000
@@ -194,7 +184,6 @@
       setConn("ok");
       client.subscribe(TOPIC_STATUS, { qos: 0 });
     });
-
     client.on("reconnect", () => setConn("warn"));
     client.on("close", () => setConn("bad"));
     client.on("offline", () => setConn("bad"));
@@ -209,7 +198,6 @@
       try {
         const d = JSON.parse(text);
 
-        // General
         el("wifi").textContent = d.wifi ? "Conectado" : "Desconectado";
         el("wifi").className = "value " + (d.wifi ? "ok" : "bad");
 
@@ -221,29 +209,26 @@
 
         // Plug 1
         if (d.plug1) {
-          el("p1mode").textContent = d.plug1.mode ?? "–";
+          el("p1mode").textContent = d.plug1.mode ?? "AUTO";
           el("p1relay").textContent = relayTxt(d.plug1.relay);
           el("p1relay").className = "value " + relayClass(d.plug1.relay);
-          el("p1state").textContent = (d.plug1.mode === "AUTO") ? "Siguiendo flotador" : "Manual";
-          el("p1state").className = "value " + ((d.plug1.mode === "AUTO") ? "ok" : "warn");
+          el("p1state").textContent = "Sigue flotador (override disponible)";
+          el("p1state").className = "value ok";
         }
 
         // Plug 2
         if (d.plug2) {
-          el("p2mode").textContent = d.plug2.mode ?? "–";
+          el("p2mode").textContent = d.plug2.mode ?? "MANUAL";
           el("p2relay").textContent = relayTxt(d.plug2.relay);
           el("p2relay").className = "value " + relayClass(d.plug2.relay);
-          el("p2state").textContent = (d.plug2.mode === "AUTO") ? "Siguiendo flotador" : "Manual";
-          el("p2state").className = "value " + ((d.plug2.mode === "AUTO") ? "ok" : "warn");
+          el("p2state").textContent = "Control directo";
+          el("p2state").className = "value warn";
         }
-      } catch {
-        // Si no es JSON, igual lo mostramos en raw
-      }
+      } catch {}
     });
 
     function sendCmd(obj) {
-      const msg = JSON.stringify(obj);
-      client.publish(TOPIC_CMD, msg, { qos: 0, retain: false });
+      client.publish(TOPIC_CMD, JSON.stringify(obj), { qos: 0, retain: false });
     }
 
     setConn("bad");
