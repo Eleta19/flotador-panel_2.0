@@ -36,7 +36,7 @@
 </head>
 <body>
   <div class="container">
-    <h1>Flotador Inteligente</h1>
+    <h1>Control IoT con ESP32</h1>
 
     <div class="subtitle">
       <div>Panel remoto flotador IoT</div>
@@ -65,7 +65,7 @@
         <div class="section-title">
           <div>
             <div style="font-size:1.05rem;font-weight:800">Enchufe flotador</div>
-            <div class="tag">Siempre en AUTO.</div>
+            <div class="tag">Siempre en AUTO</div>
           </div>
           <div class="pill">
             <span class="label" style="margin:0">Modo:</span>
@@ -85,8 +85,8 @@
         </div>
 
         <div class="buttons">
-          <button class="primary" onclick="sendCmd({plug:1, relay:'ON'})">ENCENDER</button>
-          <button class="danger" onclick="sendCmd({plug:1, relay:'OFF'})">APAGAR</button>
+          <button class="danger" onclick="sendCmd({plug:1, relay:'ON'})">APAGAR</button>
+          <button class="primary" onclick="sendCmd({plug:1, relay:'OFF'})">ENCENDER</button>
         </div>
       </div>
 
