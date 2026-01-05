@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Flotador Inteligente (Remoto)</title>
+  <title>Control IoT para mis peceras</title>
   <style>
     :root { --bg:#0f172a; --card:#111827; --muted:#94a3b8; --ok:#22c55e; --warn:#facc15; --bad:#ef4444; --primary:#38bdf8; }
     *{box-sizing:border-box}
@@ -39,7 +39,7 @@
     <h1>Flotador Inteligente</h1>
 
     <div class="subtitle">
-      <div>Panel remoto por MQTT (HiveMQ Cloud)</div>
+      <div>Panel remoto flotador IoT</div>
       <div class="top-actions">
         <span class="pill">
           <span id="dot" class="dot bad"></span>
@@ -65,7 +65,7 @@
         <div class="section-title">
           <div>
             <div style="font-size:1.05rem;font-weight:800">Enchufe flotador</div>
-            <div class="tag">Siempre en AUTO (sigue el flotador). ON/OFF = override puntual.</div>
+            <div class="tag">Siempre en AUTO.</div>
           </div>
           <div class="pill">
             <span class="label" style="margin:0">Modo:</span>
@@ -79,7 +79,7 @@
 
           <!-- NUEVO: reloj override -->
           <div class="item">
-            <div class="label">Override (restante)</div>
+            <div class="label">Tiempo Restante</div>
             <div class="value" id="p1timer">—</div>
           </div>
         </div>
