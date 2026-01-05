@@ -76,6 +76,12 @@
         <div class="grid" style="margin-top:12px">
           <div class="item"><div class="label">Relé</div><div class="value" id="p1relay">–</div></div>
           <div class="item"><div class="label">Estado</div><div class="value" id="p1state">–</div></div>
+
+          <!-- NUEVO: reloj override -->
+          <div class="item">
+            <div class="label">Override (restante)</div>
+            <div class="value" id="p1timer">—</div>
+          </div>
         </div>
 
         <div class="buttons">
@@ -172,6 +178,39 @@
       return (v === 1) ? "ok" : (v === 0) ? "bad" : "warn";
     }
 
+    // NUEVO: formato mm:ss para reloj
+    function formatMs(ms) {
+      if (!ms || ms <= 0) return "00:00";
+      const totalSec = Math.ceil(ms / 1000);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    }
+
+    // NUEVO: guardamos el último remaining_ms y hacemos tick local (suaviza la UI)
+    let lastRemainingMs = 0;
+    let lastUpdateAt = 0;
+
+    function updateTimerUI() {
+      if (!lastUpdateAt) return;
+
+      const elapsed = Date.now() - lastUpdateAt;
+      const current = Math.max(0, lastRemainingMs - elapsed);
+
+      const t = el("p1timer");
+      if (current > 0) {
+        t.textContent = formatMs(current);
+        t.className = "value warn";
+        el("p1state").textContent = "Override activo (volverá a AUTO al terminar)";
+        el("p1state").className = "value warn";
+      } else {
+        t.textContent = "AUTO";
+        t.className = "value ok";
+        // no sobrescribimos p1state si no hay datos; lo dejamos en modo normal
+      }
+    }
+    setInterval(updateTimerUI, 250);
+
     const clientId = "web_" + Math.random().toString(16).slice(2);
     const client = mqtt.connect(url, {
       clientId, username, password,
@@ -212,8 +251,21 @@
           el("p1mode").textContent = d.plug1.mode ?? "AUTO";
           el("p1relay").textContent = relayTxt(d.plug1.relay);
           el("p1relay").className = "value " + relayClass(d.plug1.relay);
-          el("p1state").textContent = "Sigue flotador (override disponible)";
-          el("p1state").className = "value ok";
+
+          // NUEVO: leer override.remaining_ms si existe
+          const ov = d.plug1.override;
+          if (ov && ov.active && typeof ov.remaining_ms === "number") {
+            lastRemainingMs = ov.remaining_ms;
+            lastUpdateAt = Date.now();
+            // el tick local se encarga de mostrar el reloj
+          } else {
+            lastRemainingMs = 0;
+            lastUpdateAt = Date.now();
+            el("p1timer").textContent = "AUTO";
+            el("p1timer").className = "value ok";
+            el("p1state").textContent = "Sigue flotador (override disponible)";
+            el("p1state").className = "value ok";
+          }
         }
 
         // Plug 2
